@@ -5,6 +5,11 @@ import { OnModuleInit } from "@nestjs/common";
 @WebSocketGateway()
 export class MyGateway implements OnModuleInit {
 
+    piatti = {
+        "piatto1" : 0,
+        "piatto2" : 0
+    };
+
     @WebSocketServer()
     server: Server;
     // 'newMessage' è il nome dell'evento sul quale
@@ -18,13 +23,27 @@ export class MyGateway implements OnModuleInit {
         });
     }
 
-    @SubscribeMessage('newMessage')
-    onNewMessage(@MessageBody() body: any) {
-        console.log(body);
-        console.log(body["msg"]);
+    @SubscribeMessage('increment')
+    onIncrement(@MessageBody() body: any) {
+        console.log(body["plate"]);
+
+        this.piatti[body["plate"]] += body["quantity"]
+        console.log(this.piatti);
 
         this.server.emit('onMessage', {
-            "message" : "I received: " + body["msg"]
+            "ordine" : this.piatti
         })
+    }
+
+    @SubscribeMessage('decrement')
+    onDecrement(@MessageBody() body: any) {
+        console.log(body["plate"]);
+
+        this.piatti[body["plate"]] -= body["quantity"]
+        console.log(this.piatti);
+
+        this.server.emit('onMessage', {
+            "ordine" : this.piatti
+        })      
     }
 }
