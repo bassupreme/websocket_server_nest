@@ -5,6 +5,19 @@ import { OnModuleInit } from "@nestjs/common";
 @WebSocketGateway()
 export class MyGateway implements OnModuleInit {
 
+    db = {
+        "id_prenotazione_1" : {
+            "piatto1" : 0,
+            "piatto2" : 0,
+            "piatto3" : 0
+        },
+        "id_prenotazione_2" : {
+            "piatto4" : 0,
+            "piatto5" : 0,
+            "piatto6" : 0
+        },
+    }
+
     piatti = {
         "piatto1" : 0,
         "piatto2" : 0
@@ -20,7 +33,25 @@ export class MyGateway implements OnModuleInit {
     onModuleInit() {
         this.server.on('connection', (socket) => {
             console.log(socket.id + " connected");
+            // serve per poter rispondere al client con un messaggio di acknowledgement
+            // una volta che il messaggio di acknowledgement è stato ricevuto dal client
+            // il client può richiedere il menu associato alla prenotazione.
+
+            // trovare un modo di passare dati dal client durante la connessione
+            // console.log(socket.handshake.query['id_prenotazione']);
+            const id_prenotazione: string = socket.handshake.query.id_prenotazione.toString();
+            this.server.to(socket.id).emit('onConnection', { prenotazione : this.db[id_prenotazione]});
         });
+    }
+    
+
+    @SubscribeMessage('getMenu')
+    onGetMenu(@MessageBody() body: any) {
+        const id = body.id;
+        console.log(this.db[id]);
+        this.server.emit('onReceiveMenu', {
+            "prenotazione" : this.db[body['id_prenotazione_1']]
+        })
     }
 
     @SubscribeMessage('increment')
