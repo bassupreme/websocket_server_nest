@@ -39,8 +39,10 @@ export class MyGateway implements OnModuleInit {
 
             // trovare un modo di passare dati dal client durante la connessione
             // console.log(socket.handshake.query['id_prenotazione']);
-            const id_prenotazione: string = socket.handshake.query.id_prenotazione.toString();
-            this.server.to(socket.id).emit('onConnection', { prenotazione : this.db[id_prenotazione]});
+            if (socket.handshake.query != null) { // significa che ci stiamo connettendo al server socket.
+                const id_prenotazione: string = socket.handshake.query.id_prenotazione.toString(); 
+                this.server.to(socket.id).emit('onConnection', { prenotazione : this.db[id_prenotazione]});
+            }
         });
     }
     
