@@ -18,6 +18,7 @@ export class MyGateway implements OnModuleInit {
         },
     }
 
+    // db per simulare un'ordinazione
     piatti = {
         "piatto1" : 0,
         "piatto2" : 0
@@ -39,10 +40,10 @@ export class MyGateway implements OnModuleInit {
 
             // trovare un modo di passare dati dal client durante la connessione
             // console.log(socket.handshake.query['id_prenotazione']);
-            if (socket.handshake.query != null) { // significa che ci stiamo connettendo al server socket.
-                const id_prenotazione: string = socket.handshake.query.id_prenotazione.toString(); 
-                this.server.to(socket.id).emit('onConnection', { prenotazione : this.db[id_prenotazione]});
-            }
+            // if (socket.handshake.query != null) { // significa che ci stiamo connettendo al server socket.
+            //     const id_prenotazione: string = socket.handshake.query.id_prenotazione.toString(); 
+            //     this.server.to(socket.id).emit('onConnection', { prenotazione : this.db[id_prenotazione]});
+            // }
         });
     }
     
@@ -57,10 +58,14 @@ export class MyGateway implements OnModuleInit {
     }
 
     @SubscribeMessage('increment')
-    onIncrement(@MessageBody() body: any) {
+    async onIncrement(@MessageBody() body: any) {
         console.log(body["plate"]);
 
-        this.piatti[body["plate"]] += body["quantity"]
+        // TODO 
+        // const result = await this.reservationRepository.find({ ... })
+        const result = await (await fetch("https://jsonplaceholder.typicode.com/todos/1")).json();
+        
+        this.piatti[body["plate"]] += result["id"];
         console.log(this.piatti);
 
         this.server.emit('onMessage', {
